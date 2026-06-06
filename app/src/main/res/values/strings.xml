@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MatisuXCS</string>
+    <string name="accessibility_service_desc">用于远程控制和屏幕捕获的辅助功能服务</string>
+    <string name="service_running">远程控制服务运行中</string>
+    <string name="tap_to_configure">点击配置</string>
+</resources>
