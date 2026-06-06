@@ -13,6 +13,8 @@ import kotlinx.coroutines.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.util.concurrent.CopyOnWriteArrayList
 
 class ControlServer(
@@ -169,24 +171,32 @@ class ControlServer(
     }
 
     private fun handleMJPEGStream(session: IHTTPSession): Response {
-        return newChunkedResponse(
-            Response.Status.OK,
-            "multipart/x-mixed-replace; boundary=--boundary"
-        ) {
+        val pipedIn = PipedInputStream()
+        val pipedOut = PipedOutputStream(pipedIn)
+
+        Thread {
             try {
                 while (true) {
                     val data = onScreenCaptureRequest?.invoke("jpeg", 60) ?: break
-                    it.write("--boundary\r\n".toByteArray())
-                    it.write("Content-Type: image/jpeg\r\n".toByteArray())
-                    it.write("Content-Length: ${data.size}\r\n\r\n".toByteArray())
-                    it.write(data)
-                    it.write("\r\n".toByteArray())
-                    it.flush()
+                    pipedOut.write("--boundary\r\n".toByteArray())
+                    pipedOut.write("Content-Type: image/jpeg\r\n".toByteArray())
+                    pipedOut.write("Content-Length: ${data.size}\r\n\r\n".toByteArray())
+                    pipedOut.write(data)
+                    pipedOut.write("\r\n".toByteArray())
+                    pipedOut.flush()
                     Thread.sleep(50)
                 }
             } catch (_: Exception) {
+            } finally {
+                try { pipedOut.close() } catch (_: Exception) {}
             }
-        }
+        }.start()
+
+        return newChunkedResponse(
+            Response.Status.OK,
+            "multipart/x-mixed-replace; boundary=--boundary",
+            pipedIn
+        )
     }
 
     private fun handleDeviceInfo(): Response {

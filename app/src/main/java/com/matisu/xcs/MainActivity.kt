@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
             textSize = 13f
             setPadding(padding)
             setTextColor(0xFF90A4AE.toInt())
-            lineSpacing = 4f, 1f
+            setLineSpacing(4f, 1f)
         }
 
         startBtn = Button(this).apply {
