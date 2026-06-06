@@ -20,7 +20,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build APK
-        run: ./gradlew assembleRelease
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
 
       - name: Sign APK
         uses: r0adkll/sign-android-release@v1
